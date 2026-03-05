@@ -37,6 +37,8 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
+            /* Центрируем картинку, чтобы на мобилках не обрезало самое важное */
         }
 
         .content {
@@ -87,7 +89,8 @@
 
         .scroll-btn {
             position: absolute;
-            bottom: 30px;
+            bottom: 40px;
+            /* Было 30px, немного подняли базово */
             left: 50%;
             transform: translateX(-50%);
             z-index: 2;
@@ -101,6 +104,25 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
+        }
+
+        /* Медиа-запросы для мобильных устройств (чтобы кнопки и текст не уезжали за экран) */
+        @media (max-width: 768px) {
+            .scroll-btn {
+                bottom: 60px;
+                /* На телефонах поднимаем кнопку еще выше, чтобы не перекрывалась панелью браузера */
+            }
+
+            .content p {
+                font-size: 1.8rem;
+                /* На телефоне шрифт чуть поменьше, чтобы влезал на экран */
+            }
+
+            .content {
+                bottom: 20%;
+                /* Текст поднимаем чуть повыше от кнопки на мобилках */
+                padding: 20px;
+            }
         }
 
         .scroll-btn:hover {
