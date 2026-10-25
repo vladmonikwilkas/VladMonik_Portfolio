@@ -87,6 +87,51 @@
             background: #000;
         }
 
+        .video-loading {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 24px;
+            color: white;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.58);
+            pointer-events: none;
+        }
+
+        .video-loading[hidden] {
+            display: none;
+        }
+
+        .video-spinner {
+            width: 64px;
+            height: 64px;
+            border: 6px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: video-spin 0.85s linear infinite;
+        }
+
+        @keyframes video-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #videoLoadingText {
+            max-width: min(90vw, 520px);
+            font: 600 1.2rem/1.5 Arial, sans-serif;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        .video-loading.is-error .video-spinner {
+            display: none;
+        }
+
         .scroll-btn {
             position: absolute;
             bottom: 40px;
@@ -129,6 +174,73 @@
             transform: translateX(-50%) scale(1.1);
         }
 
+        #block3 .scroll-btn {
+            opacity: 0.5;
+        }
+
+        #block3 .scroll-btn:hover,
+        #block3 .scroll-btn:focus-visible {
+            opacity: 0.82;
+        }
+
+        #playBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            padding: 22px 42px;
+            max-width: min(88vw, 560px);
+            border: 3px solid white;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fff34a, #ffb800);
+            color: #171000;
+            font: 800 1.7rem/1.25 Arial, sans-serif;
+            text-align: center;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+            box-shadow: 0 0 14px 3px rgba(255, 220, 0, 0.75), 0 0 34px 8px rgba(255, 184, 0, 0.45);
+            cursor: pointer;
+            animation: portfolio-cta-glow 1.6s ease-in-out infinite;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        #playBtn:hover,
+        #playBtn:focus-visible {
+            animation-play-state: paused;
+            transform: translate(-50%, -50%) scale(1.04);
+            background: linear-gradient(135deg, #fff875, #ffca35);
+        }
+
+        #playBtn:focus-visible {
+            outline: 3px solid white;
+            outline-offset: 6px;
+        }
+
+        @keyframes portfolio-cta-glow {
+            0%,
+            100% {
+                box-shadow: 0 0 14px 3px rgba(255, 220, 0, 0.75), 0 0 34px 8px rgba(255, 184, 0, 0.45);
+            }
+
+            50% {
+                box-shadow: 0 0 22px 7px rgba(255, 235, 60, 0.95), 0 0 48px 15px rgba(255, 184, 0, 0.65);
+            }
+        }
+
+        @media (max-width: 768px) {
+            #playBtn {
+                width: min(88vw, 480px);
+                padding: 20px 24px;
+                font-size: clamp(1.25rem, 6vw, 1.7rem);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #playBtn {
+                animation: none;
+            }
+        }
+
         .scroll-btn::after {
             content: "↓";
             color: white;
@@ -165,11 +277,13 @@
             <source src="" type="video/mp4" id="videoSource">
             Ваш браузер не поддерживает видео.
         </video>
+        <div id="videoLoading" class="video-loading" role="status" aria-live="polite" hidden>
+            <span class="video-spinner" aria-hidden="true"></span>
+            <p id="videoLoadingText">Загружаем видео… Медленное соединение может занять немного времени.</p>
+        </div>
         <!-- Кнопка теперь ведет на 4-й блок (визуально вниз) -->
         <button class="scroll-btn" onclick="scrollToBlock(4)"></button>
-        <button id="playBtn"
-            style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2; padding:20px 50px; font-size:28px; background:rgba(0,0,0,0.85); color:white; border:3px solid white; cursor:pointer; font-weight:bold; border-radius:10px;">посмотреть
-            портфолио</button>
+        <button id="playBtn">посмотреть портфолио</button>
     </section>
 
     <!-- Блок 4: Технический клон Блока 2 для иллюзии бесконечности -->
@@ -186,7 +300,52 @@
     <script>
         const video = document.getElementById('video3');
         const playBtn = document.getElementById('playBtn');
+        const videoLoading = document.getElementById('videoLoading');
+        const videoLoadingText = document.getElementById('videoLoadingText');
+        const playButtonLabel = playBtn.textContent.trim();
         let currentBlock = 1;
+        let videoRequested = false;
+
+        function showVideoLoading() {
+            videoLoading.classList.remove('is-error');
+            videoLoadingText.textContent = 'Загружаем видео… Медленное соединение может занять немного времени.';
+            videoLoading.hidden = false;
+        }
+
+        function showVideoError() {
+            if (!videoRequested) return;
+
+            videoLoading.classList.add('is-error');
+            videoLoadingText.textContent = 'Не удалось загрузить видео. Проверь соединение и попробуй ещё раз.';
+            videoLoading.hidden = false;
+            playBtn.disabled = false;
+            playBtn.textContent = 'Повторить загрузку';
+            playBtn.style.display = 'block';
+        }
+
+        function resetVideoUI() {
+            videoRequested = false;
+            videoLoading.hidden = true;
+            videoLoading.classList.remove('is-error');
+            playBtn.disabled = false;
+            playBtn.textContent = playButtonLabel;
+        }
+
+        function startVideo() {
+            videoRequested = true;
+            showVideoLoading();
+            playBtn.disabled = true;
+            playBtn.style.display = 'none';
+
+            if (video.error) {
+                video.load();
+            }
+
+            const playPromise = video.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(showVideoError);
+            }
+        }
 
         // Логика картинок и текстов
         let imgIndex = 0; // Теперь стартуем с 0 индекса из массива loopImages
@@ -219,6 +378,7 @@
         function scrollToBlock(blockNumber) {
             // Логика для бесконечного цикла (переход 3 -> 4)
             if (currentBlock === 3 && blockNumber === 4) {
+                resetVideoUI();
                 video.pause();
                 video.currentTime = 0;
                 playBtn.style.display = 'block'; // Возвращаем кнопку Play
@@ -250,6 +410,7 @@
 
             // При переходе 2→3 показываем кнопку
             if (currentBlock === 2 && blockNumber === 3) {
+                resetVideoUI();
                 video.currentTime = 0;
                 video.pause();
                 playBtn.style.display = 'block';
@@ -277,13 +438,29 @@
 
         playBtn.addEventListener('click', () => {
             video.currentTime = 0;
-            video.play();
-            playBtn.style.display = 'none';
+            startVideo();
         });
 
         video.addEventListener('play', () => {
             playBtn.style.display = 'none';
         });
+
+        video.addEventListener('waiting', () => {
+            if (videoRequested) showVideoLoading();
+        });
+
+        video.addEventListener('stalled', () => {
+            if (videoRequested) showVideoLoading();
+        });
+
+        video.addEventListener('playing', () => {
+            if (!videoRequested) return;
+            videoLoading.hidden = true;
+            videoLoading.classList.remove('is-error');
+            playBtn.style.display = 'none';
+        });
+
+        video.addEventListener('error', showVideoError);
     </script>
 </body>
 
