@@ -279,7 +279,7 @@
         </video>
         <div id="videoLoading" class="video-loading" role="status" aria-live="polite" hidden>
             <span class="video-spinner" aria-hidden="true"></span>
-            <p id="videoLoadingText">Загружаем видео… Медленное соединение может занять немного времени.</p>
+            <p id="videoLoadingText">Загрузка портфолио</p>
         </div>
         <!-- Кнопка теперь ведет на 4-й блок (визуально вниз) -->
         <button class="scroll-btn" onclick="scrollToBlock(4)"></button>
@@ -308,7 +308,7 @@
 
         function showVideoLoading() {
             videoLoading.classList.remove('is-error');
-            videoLoadingText.textContent = 'Загружаем видео… Медленное соединение может занять немного времени.';
+            videoLoadingText.textContent = 'Загрузка портфолио';
             videoLoading.hidden = false;
         }
 
@@ -316,7 +316,7 @@
             if (!videoRequested) return;
 
             videoLoading.classList.add('is-error');
-            videoLoadingText.textContent = 'Не удалось загрузить видео. Проверь соединение и попробуй ещё раз.';
+            videoLoadingText.textContent = 'Не удалось открыть портфолио. Проверь соединение и попробуй ещё раз.';
             videoLoading.hidden = false;
             playBtn.disabled = false;
             playBtn.textContent = 'Повторить загрузку';
